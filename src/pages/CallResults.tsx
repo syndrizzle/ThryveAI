@@ -20,6 +20,8 @@ function CallResults(): JSX.Element {
   const [results, setResults] = useState<CallDetails | null>(null);
   const [healthReport, setHealthReport] = useState<HealthReport | null>(null);
 
+  const canExportResults = healthReport?.diet_plan && healthReport?.detected_disease;
+
   useEffect(() => {
     const fetchResults = async () => {
       const callId = localStorage.getItem("callId");
@@ -166,22 +168,21 @@ function CallResults(): JSX.Element {
           </motion.div>
         </div>
 
-        {/* Export and Back Buttons */}
-        <div className="fixed bottom-8 right-8 z-50 flex gap-4">
-          <AnimatedButton onClick={handleExportPDF}>
-            <Export weight="duotone" className="w-5 h-5" />
-            <span>Export Results</span>
-          </AnimatedButton>
-        </div>
-
-        {/* Back Button - Now sticky */}
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+        {/* Unified Bottom Navigation */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex gap-4">
           <AnimatedButton onClick={() => navigate('/')}>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             <span>Back to Home</span>
           </AnimatedButton>
+
+          {canExportResults && (
+            <AnimatedButton onClick={handleExportPDF}>
+              <Export weight="duotone" className="w-5 h-5" />
+              <span>Export Results</span>
+            </AnimatedButton>
+          )}
         </div>
       </div>
     </motion.div>
