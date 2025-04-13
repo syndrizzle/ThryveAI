@@ -97,7 +97,7 @@ export function Navbar() {
                         </div>
                     ) : (
                         <AnimatedButton onClick={signIn}>
-                            <span className="text-sm">Sign In</span>
+                            <span className="text-sm">Get Started</span>
                         </AnimatedButton>
                     )}
                 </div>
