@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useIsSafari } from '../hooks/useIsSafari';
 import { retellService, CallDetails } from '../lib/retellService';
 
 function CallProgress(): JSX.Element {
@@ -9,7 +8,6 @@ function CallProgress(): JSX.Element {
   const [callStatus, setCallStatus] = useState<string>('registered');
   const [callDetails, setCallDetails] = useState<CallDetails | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const isSafari = useIsSafari();
 
   useEffect(() => {
     const fetchCallStatus = async () => {
@@ -87,26 +85,83 @@ function CallProgress(): JSX.Element {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col items-center justify-center min-h-screen p-4"
+      exit={{ opacity: 0 }}
+      className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 space-y-8"
     >
-      <video autoPlay loop muted playsInline className="w-1/2 sm:w-1/4 md:w-1/6 pointer-events-none">
-        <source 
-          src={isSafari ? "/blob.mov" : "/blob.webm"} 
-          type={isSafari ? "video/quicktime" : "video/webm"} 
-        />
-      </video>
-      <div className="text-center mt-8 space-y-6">
-        <h2 className="text-4xl sm:text-6xl md:text-7xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent font-heading py-4">
-          {getStatusText()}
-        </h2>
-        <p className="text-neutral-200 text-lg sm:text-xl md:text-2xl font-body">
-          {getStatusDescription()}
-        </p>
-        {callDetails && callDetails.duration && (
-          <p className="text-neutral-300 text-base">
-            Call duration: {Math.floor(callDetails.duration / 60)} minutes {callDetails.duration % 60} seconds
-          </p>
-        )}
+      <div className="w-full max-w-xl">
+        <div className="p-8 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-8">
+          {/* Loading Animation */}
+          <div className="flex items-center justify-center py-12 relative">
+            <motion.div
+              className="absolute w-32 h-32 rounded-full border-2 border-white/20"
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.1, 0.3],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.div
+              className="absolute w-32 h-32 rounded-full border-2 border-white/20"
+              animate={{
+                scale: [1.1, 1.2, 1.1],
+                opacity: [0.2, 0.1, 0.2],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.5
+              }}
+            />
+            <motion.div
+              className="relative w-24 h-24 rounded-full bg-gradient-to-r from-neutral-900 to-neutral-800 flex items-center justify-center"
+              animate={{
+                rotate: 360,
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              <div className="absolute inset-0.5 rounded-full bg-neutral-950" />
+              <div className="absolute w-full h-full rounded-full border border-white/10" />
+              <motion.div
+                className="absolute w-2 h-2 rounded-full bg-white/20"
+                style={{ top: "4px" }}
+                animate={{
+                  opacity: [0.2, 0.4, 0.2],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            </motion.div>
+          </div>
+
+          {/* Status Text */}
+          <div className="space-y-4 text-center">
+            <h2 className="text-3xl font-heading font-medium text-white">
+              {getStatusText()}
+            </h2>
+            <p className="text-neutral-300 text-lg">
+              {getStatusDescription()}
+            </p>
+            {callDetails && callDetails.duration && (
+              <div className="p-4 rounded-xl bg-neutral-900/40 backdrop-blur-sm border border-white/10">
+                <p className="text-neutral-300">
+                  Call duration: {Math.floor(callDetails.duration / 60)} minutes {callDetails.duration % 60} seconds
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </motion.div>
   );

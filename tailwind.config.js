@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['IBM Plex Sans', 'sans-serif'],
-        heading: ['Dela Gothic One', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+        heading: ['Inter', 'sans-serif'],
       },
     },
   },
