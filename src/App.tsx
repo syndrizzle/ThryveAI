@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from './lib/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Navbar } from './components/Navbar';
@@ -10,6 +11,21 @@ import CallProgress from './pages/CallProgress';
 import CallResults from './pages/CallResults';
 import Error from './pages/Error';
 import Profile from './pages/Profile';
+import { supabase } from './lib/supabase';
+
+function AuthCallback() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/', { replace: true });
+      }
+    });
+  }, [navigate]);
+
+  return null;
+}
 
 function App() {
   return (
@@ -21,6 +37,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/error" element={<Error />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Protected Routes */}
             <Route path="/onboarding" element={
