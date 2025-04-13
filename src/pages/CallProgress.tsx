@@ -23,8 +23,12 @@ function CallProgress(): JSX.Element {
           setCallStatus(details.call_status || 'registered');
           
           if (details.call_status === 'ended') {
-            console.log('Call ended, navigating to results page');
-            navigate('/call-results', { state: { from: 'app' } });
+            console.log('Call ended, waiting for analysis...');
+            setCallStatus('analyzing'); // Add new status
+            // Wait 5 seconds before navigating
+            setTimeout(() => {
+              navigate('/call-results', { state: { from: 'app' } });
+            }, 5000);
           } else if (details.call_status === 'error') {
             console.log('Call error detected, navigating to error page');
             setErrorMessage('There was an error with your call. Redirecting to error page...');
@@ -53,6 +57,8 @@ function CallProgress(): JSX.Element {
         return 'Initiating your call...';
       case 'ongoing':
         return 'Your conversation is in progress...';
+      case 'analyzing':
+        return 'Analyzing your conversation...';
       case 'ended':
         return 'Call completed. Preparing your analysis...';
       case 'error':
@@ -72,6 +78,8 @@ function CallProgress(): JSX.Element {
         return 'Your call is being initiated. The phone should ring shortly.';
       case 'ongoing':
         return 'Your call is in progress. The analysis will appear once the call is completed.';
+      case 'analyzing':
+        return 'Please wait while we analyze your conversation...';
       case 'ended':
         return 'Your call has ended. Preparing your conversation analysis...';
       case 'error':
@@ -156,7 +164,7 @@ function CallProgress(): JSX.Element {
             {callDetails && callDetails.duration && (
               <div className="p-4 rounded-xl bg-neutral-900/40 backdrop-blur-sm border border-white/10">
                 <p className="text-neutral-300">
-                  Call duration: {Math.floor(callDetails.duration / 60)} minutes {callDetails.duration % 60} seconds
+                  Call duration: {Math.floor((callDetails.duration / 1000) / 60)} minutes {Math.floor((callDetails.duration / 1000) % 60)} seconds
                 </p>
               </div>
             )}

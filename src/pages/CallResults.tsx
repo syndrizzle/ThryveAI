@@ -2,15 +2,23 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { retellService, CallDetails } from '../lib/retellService';
+import { Heart, Cookie, TreePalm, Article, Brain, Export } from '@phosphor-icons/react';
+import { AnimatedButton } from '../components/AnimatedButton';
+import { generatePDF } from '../utils/pdfGenerator';
+import { useAuth } from '../hooks/useAuth';
 
-interface Message {
-  role: 'Agent' | 'User';
-  content: string;
+interface HealthReport {
+  detected_disease: string;
+  diet_plan: string;
+  preventive_measures: string;
+  user_action: string;
 }
 
 function CallResults(): JSX.Element {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [results, setResults] = useState<CallDetails | null>(null);
+  const [healthReport, setHealthReport] = useState<HealthReport | null>(null);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -19,7 +27,30 @@ function CallResults(): JSX.Element {
       try {
         if (callId) {
           const callDetails = await retellService.getCallDetails(callId);
+          console.log('Call Details in Results:', JSON.stringify(callDetails, null, 2));
           setResults(callDetails);
+          
+          // Debug logging for call analysis data
+          console.log('Call Analysis:', callDetails.call_analysis);
+          console.log('Custom Analysis Data:', callDetails.call_analysis?.custom_analysis_data);
+          
+          // Parse the nested JSON string from detailed_health_report
+          if (callDetails.call_analysis?.custom_analysis_data?.detailed_health_report) {
+            try {
+              const healthReportString = callDetails.call_analysis.custom_analysis_data.detailed_health_report;
+              console.log('Health Report String:', healthReportString);
+              
+              const parsed = JSON.parse(healthReportString);
+              console.log('Parsed Health Report:', parsed);
+              setHealthReport(parsed);
+            } catch (parseError) {
+              console.error("Error parsing health report:", parseError);
+              console.error("Raw health report data:", callDetails.call_analysis.custom_analysis_data.detailed_health_report);
+            }
+          } else {
+            console.log('No detailed health report found in response');
+          }
+          
           localStorage.removeItem("callId");
         }
       } catch (error) {
@@ -31,132 +62,129 @@ function CallResults(): JSX.Element {
     fetchResults();
   }, [navigate]);
 
-  const parseTranscript = (transcript: string): Message[] => {
-    if (!transcript) return [];
+  const handleExportPDF = async () => {
+    if (!user) return;
     
-    return transcript.split('\n')
-      .filter(line => line.trim())
-      .map(line => {
-        const [role, ...contentParts] = line.split(':');
-        return {
-          role: role.trim() as 'Agent' | 'User',
-          content: contentParts.join(':').trim().replace(/"/g, '')
-        };
-      });
+    await generatePDF({
+      userName: user.user_metadata.full_name || 'User',
+      userEmail: user.email || 'N/A',
+      healthReport,
+      callAnalysis: results?.call_analysis || null
+    });
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6">
-      <div className="min-h-screen flex flex-col">
-        <div className="py-6 sm:py-10 text-center">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent font-heading py-4">
-            Call Analysis
-          </h1>
-          <p className="text-neutral-300 text-lg sm:text-xl font-body py-2 px-4">
-            Here's what we found from your conversation
-          </p>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex flex-col items-center w-full pt-32 pb-32 px-4 sm:px-8 relative"
+    >
+      <div className="w-full max-w-5xl space-y-6">
+        <h1 className="text-4xl sm:text-5xl font-heading font-medium text-center text-white mb-8">
+          Health Assessment Results
+        </h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Detected Diseases */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <Heart weight="duotone" className="w-6 h-6 text-white/90" />
+              <h2 className="text-xl font-medium text-white">Detected Conditions</h2>
+            </div>
+            <p className="text-neutral-300 text-lg">
+              {healthReport?.detected_disease || "No conditions detected"}
+            </p>
+          </motion.div>
+
+          {/* User Sentiment */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="p-6 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <Brain weight="duotone" className="w-6 h-6 text-white/90" />
+              <h2 className="text-xl font-medium text-white">Overall Sentiment</h2>
+            </div>
+            <p className="text-neutral-300 text-lg">
+              {results?.call_analysis?.user_sentiment || "No sentiment data available"}
+            </p>
+          </motion.div>
+
+          {/* Preventive Measures */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="p-6 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <TreePalm weight="duotone" className="w-6 h-6 text-white/90" />
+              <h2 className="text-xl font-medium text-white">Preventive Measures</h2>
+            </div>
+            <p className="text-neutral-300 text-lg">
+              {healthReport?.preventive_measures || "No preventive measures available"}
+            </p>
+          </motion.div>
+
+          {/* Diet Plan */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-6 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <Cookie weight="duotone" className="w-6 h-6 text-white/90" />
+              <h2 className="text-xl font-medium text-white">Diet Plan</h2>
+            </div>
+            <p className="text-neutral-300 text-lg">
+              {healthReport?.diet_plan || "No diet plan available"}
+            </p>
+          </motion.div>
+
+          {/* Summary */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="md:col-span-2 p-6 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-4"
+          >
+            <div className="flex items-center gap-3">
+              <Article weight="duotone" className="w-6 h-6 text-white/90" />
+              <h2 className="text-xl font-medium text-white">Conversation Summary</h2>
+            </div>
+            <p className="text-neutral-300 text-lg">
+              {results?.call_analysis?.call_summary || "No summary available"}
+            </p>
+          </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-6 sm:space-y-8 mb-24"
-        >
-          <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900/50 backdrop-blur-xl border border-white/[0.08] shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl">📝</span>
-              <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Summary
-              </h3>
-            </div>
-            <p className="text-neutral-300 leading-relaxed text-lg">
-              {results?.summary || "No summary available"}
-            </p>
-          </div>
+        {/* Export and Back Buttons */}
+        <div className="fixed bottom-8 right-8 z-50 flex gap-4">
+          <AnimatedButton onClick={handleExportPDF}>
+            <Export weight="duotone" className="w-5 h-5" />
+            <span>Export Results</span>
+          </AnimatedButton>
+        </div>
 
-          <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900/50 backdrop-blur-xl border border-white/[0.08] shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl">💭</span>
-              <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                User Sentiment
-              </h3>
-            </div>
-            <p className="text-neutral-300 leading-relaxed text-lg">
-              {results?.user_sentiment || "No sentiment data available"}
-            </p>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-3xl bg-neutral-900/50 backdrop-blur-xl border border-white/[0.08] shadow-xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-xl sm:text-2xl">💬</span>
-              <h3 className="text-3xl sm:text-3xl font-bold bg-gradient-to-r from-sky-400 to-teal-400 bg-clip-text text-transparent">
-                Transcript
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {results?.transcript ? (
-                parseTranscript(results.transcript).map((message, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`flex ${message.role === 'User' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`
-                        max-w-[90%] sm:max-w-[80%] p-3 rounded-2xl flex flex-col gap-1
-                        ${message.role === 'User' 
-                          ? 'bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-tr-none border-t border-r border-indigo-500/20' 
-                          : 'bg-gradient-to-r from-neutral-800/60 to-neutral-900/60 rounded-tl-none border-t border-l border-neutral-500/20'
-                        }
-                      `}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs sm:text-sm pr-4 sm:pr-8 font-bold font-body ${message.role === 'User' ? 'text-purple-400' : 'text-gray-200'}`}>
-                          {message.role}
-                        </span>
-                      </div>
-                      <p className="text-neutral-300 text-sm leading-relaxed pr-2 sm:pr-4">
-                        {message.content}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))
-              ) : (
-                <p className="text-neutral-400 text-center">No transcript available</p>
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="fixed bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 w-[90%] sm:w-auto"
-        >
-          <button
-            onClick={() => navigate('/')}
-            className="w-full sm:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-white group-hover:-translate-x-1 transition-transform"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
-                clipRule="evenodd"
-              />
+        {/* Back Button - Now sticky */}
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+          <AnimatedButton onClick={() => navigate('/')}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span className="text-white font-black font-body">Back to Home</span>
-          </button>
-        </motion.div>
+            <span>Back to Home</span>
+          </AnimatedButton>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

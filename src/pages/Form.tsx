@@ -45,8 +45,11 @@ function Form(): JSX.Element {
                 throw new Error('Could not find your phone number');
             }
 
-            // Initiate call using the stored phone number
-            const callId = await retellService.createCall(profile.phone_number);
+            // Get user's first name from metadata
+            const firstName = user?.user_metadata.full_name?.split(" ")[0] || "User";
+
+            // Initiate call using the stored phone number and first name
+            const callId = await retellService.createCall(profile.phone_number, firstName);
             localStorage.setItem("callId", callId);
             navigate("/call-progress", { state: { from: 'app' } });
         } catch (error) {

@@ -19,27 +19,40 @@ const retellAxios = axios.create({
     }
 });
 
+interface CallAnalysis {
+    in_voicemail: boolean;
+    call_summary: string;
+    user_sentiment: string;
+    custom_analysis_data: {
+        detailed_health_report: string;
+    };
+    call_successful: boolean;
+}
+
 export interface CallDetails {
+    call_id: string;
+    call_status: string;
+    duration?: number;
+    call_analysis?: CallAnalysis;
     summary?: string;
     user_sentiment?: string;
     transcript?: string;
-    call_status?: string;
-    call_id?: string;
     start_time?: string;
     end_time?: string;
-    duration?: number;
     recording_url?: string;
 }
 
 export const retellService = {
-    async createCall(phoneNumber: string): Promise<string> {
+    async createCall(phoneNumber: string, userName: string): Promise<string> {
         try {
             console.log('Creating call with phone number:', phoneNumber);
             const response = await retellAxios.post('/create-phone-call', {
                 from_number: FROM_PHONE_NUMBER,
                 to_number: phoneNumber,
                 override_agent_id: AGENT_ID,
-                retell_llm_dynamic_variables: {}
+                retell_llm_dynamic_variables: {
+                    user_name: userName
+                }
             });
             console.log('Call created successfully:', response.data);
             return response.data.call_id;
@@ -53,26 +66,23 @@ export const retellService = {
         try {
             console.log('Fetching call details for call ID:', callId);
             const response = await retellAxios.get(`/get-call/${callId}`);
-            console.log('Call details response:', response.data);
+            console.log('Raw API Response:', JSON.stringify(response.data, null, 2));
+            console.log('Call Analysis Data:', response.data.call_analysis);
             
             // Map the response data to our CallDetails interface
             const callDetails: CallDetails = {
-                summary: response.data.call_analysis?.call_summary,
-                user_sentiment: response.data.call_analysis?.user_sentiment,
-                transcript: response.data.transcript,
-                call_status: response.data.call_status,
                 call_id: response.data.call_id,
-                start_time: response.data.start_time,
-                end_time: response.data.end_time,
-                duration: response.data.duration,
+                call_status: response.data.call_status,
+                duration: response.data.duration_ms,
+                call_analysis: response.data.call_analysis,  // Include full call_analysis object
                 recording_url: response.data.recording_url
             };
             
-            console.log('Processed call details:', callDetails);
+            console.log('Processed call details:', JSON.stringify(callDetails, null, 2));
             return callDetails;
         } catch (error) {
             console.error('Error fetching call details:', error);
             throw new Error('Failed to fetch call details');
         }
     }
-}; 
+};
