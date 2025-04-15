@@ -79,13 +79,13 @@ function CallProgress(): JSX.Element {
       case 'ongoing':
         return 'Your call is in progress. The analysis will appear once the call is completed.';
       case 'analyzing':
-        return 'Please wait while we analyze your conversation...';
+        return 'Please wait while we analyze your conversation..';
       case 'ended':
-        return 'Your call has ended. Preparing your conversation analysis...';
+        return 'Your call has ended. Preparing your conversation analysis..';
       case 'error':
-        return 'There was an error with your call. Redirecting to error page...';
+        return 'There was an error with your call. Redirecting to error page..';
       default:
-        return 'Processing your conversation. Please wait...';
+        return 'Processing your conversation. Please wait..';
     }
   };
 
