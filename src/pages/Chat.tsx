@@ -120,7 +120,7 @@ function Chat(): JSX.Element {
                 if (fetchedMessages.length === 0) {
                     fetchedMessages.push({
                         role: "model",
-                        parts: [{ text: "👋 Hi! I'm ThryveAI. How can I help you today? (This is a demo prompt. Please do not share sensitive information.)" }],
+                        parts: [{ text: "👋 Hi! I'm ThryveAI. How can I help you today?" }],
                         timestamp: Date.now() - 1
                     });
                 }
