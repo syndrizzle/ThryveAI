@@ -11,6 +11,8 @@ import CallProgress from './pages/CallProgress';
 import CallResults from './pages/CallResults';
 import Error from './pages/Error';
 import Profile from './pages/Profile';
+import Pricing from './pages/Pricing';
+import Chat from './pages/Chat';
 import { supabase } from './lib/supabase';
 
 function AuthCallback() {
@@ -38,6 +40,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/error" element={<Error />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/pricing" element={<Pricing />} />
 
             {/* Protected Routes */}
             <Route path="/onboarding" element={
@@ -63,6 +66,11 @@ function App() {
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/chat" element={
+              <ProtectedRoute>
+                <Chat />
               </ProtectedRoute>
             } />
 

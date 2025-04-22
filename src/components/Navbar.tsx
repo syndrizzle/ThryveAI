@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AnimatedButton } from './AnimatedButton';
 import { useAuth } from '../hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Tag, User, SignOut } from '@phosphor-icons/react'; // Import User and SignOut
 
 export function Navbar() {
     const { user, signIn, signOut } = useAuth();
@@ -32,13 +33,22 @@ export function Navbar() {
 
     return (
         <header className="fixed top-0 left-0 right-0 h-24 flex items-center justify-center z-50" ref={menuRef}>
-            <nav className="flex items-center gap-4 px-6 py-3 rounded-full bg-neutral-950/50 backdrop-blur-lg border border-white/10 justify-center flex-row">
+            <nav className="flex items-center gap-2 px-6 py-3 rounded-full bg-neutral-950/50 backdrop-blur-lg border border-white/10 justify-center flex-row">
                 <Link to="/" className="flex items-center gap-2">
                     <img src="/logo.png" alt="ThryveAI" className="w-8 h-8" />
                     <span className="text-lg font-semibold">ThryveAI</span>
                 </Link>
                 
                 <div className="w-px h-6 bg-white/10 mx-2" />
+
+                {/* Updated Pricing Link */}
+                <Link 
+                    to="/pricing" 
+                    className="flex items-center justify-center w-8 h-8 text-neutral-300 hover:text-white bg-transparent border border-white/10 hover:border-white/20 rounded-full transition-all hover:scale-105"
+                    aria-label="Pricing"
+                >
+                    <Tag size={18} weight="duotone" />
+                </Link>
                 
                 <div className="flex items-center gap-4">
                     {user ? (
@@ -76,18 +86,14 @@ export function Navbar() {
                                                 }}
                                                 className="w-full flex items-center gap-2 px-3 py-2.5 text-neutral-300 hover:bg-white/5 rounded-xl transition-colors text-left text-sm"
                                             >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
+                                                <User size={16} weight="duotone" /> {/* Use Phosphor icon */}
                                                 <span>View Profile</span>
                                             </button>
                                             <button
                                                 onClick={handleSignOut}
                                                 className="w-full flex items-center gap-2 px-3 py-2.5 text-neutral-300 hover:bg-white/5 rounded-xl transition-colors text-left text-sm"
                                             >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                                </svg>
+                                                <SignOut size={16} weight="duotone" /> {/* Use Phosphor icon */}
                                                 <span>Sign Out</span>
                                             </button>
                                         </div>

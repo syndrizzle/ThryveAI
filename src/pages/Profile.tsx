@@ -104,7 +104,7 @@ const Profile: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8"
+      className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 relative"
     >
       <div className="w-full max-w-xl">
         <div className="p-8 rounded-2xl bg-neutral-950/50 backdrop-blur-xl border border-white/10 space-y-8">
@@ -144,46 +144,62 @@ const Profile: React.FC = () => {
             
             {isEditing ? (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="relative">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="h-12 px-3 rounded-xl bg-neutral-900/60 backdrop-blur-sm border border-white/10 hover:border-white/20 transition-colors flex items-center gap-2 text-white min-w-[80px]"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-neutral-900/50 border border-white/10 hover:bg-neutral-800/50 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
                     >
                       {getCountryInfo(countryCode) && (
-                        <img src={getCountryInfo(countryCode)?.flag} alt="" className="w-5 h-4" />
+                        <img
+                          src={getCountryInfo(countryCode)?.flag}
+                          alt=""
+                          className="w-5 h-4"
+                        />
                       )}
-                      {countryCode}
+                      <span className="text-white/90">{countryCode}</span>
+                      <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
                     </button>
+
                     {dropdownOpen && (
-                      <div className="absolute mt-2 w-48 rounded-xl bg-neutral-950/80 backdrop-blur-xl border border-white/10 overflow-hidden">
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute left-0 top-full mt-2 w-full sm:w-48 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl z-[60]"
+                      >
                         {countryOptions.map((option) => (
                           <button
                             key={option.code}
                             type="button"
-                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-neutral-700/50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                            className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors first:rounded-t-xl last:rounded-b-xl"
                             onClick={() => {
                               setCountryCode(option.code);
                               setDropdownOpen(false);
                             }}
                           >
                             <img src={option.flag} alt={option.country} className="w-5 h-4" />
-                            <span className="text-neutral-200">{option.country}</span>
-                            <span className="ml-auto text-neutral-400">{option.code}</span>
+                            <span className="text-white/90">{option.country}</span>
+                            <span className="ml-auto text-white/60">{option.code}</span>
                           </button>
                         ))}
-                      </div>
+                      </motion.div>
                     )}
                   </div>
+
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Enter phone number"
-                    className="flex-1 h-12 px-4 rounded-xl bg-neutral-900/60 backdrop-blur-sm border border-white/10 hover:border-white/20 focus:border-white/30 transition-colors text-white placeholder-neutral-500"
+                    className="flex-1 bg-neutral-900/50 text-white border border-white/10 rounded-xl px-4 py-3 
+                        focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-white/40"
+                    placeholder="Enter your phone number"
+                    required
                   />
                 </div>
+
                 <div className="flex gap-2">
                   <AnimatedButton type="submit" disabled={loading}>
                     {loading ? 'Saving...' : 'Save Changes'}
@@ -222,16 +238,16 @@ const Profile: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Back Button */}
-        <div className="mt-6 flex justify-center">
-          <AnimatedButton onClick={() => navigate('/')}>
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            <span>Back to Home</span>
-          </AnimatedButton>
-        </div>
+      {/* Floating Back Button */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <AnimatedButton onClick={() => navigate('/')}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Back to Home</span>
+        </AnimatedButton>
       </div>
     </motion.div>
   );
